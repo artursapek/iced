@@ -1,6 +1,6 @@
 use crate::{Primitive, Renderer};
 use iced_native::{
-    text, Color, Font, HorizontalAlignment, MouseCursor, Rectangle, Size,
+    text, Color, Font, HorizontalAlignment, MouseCursor, Rectangle, Size, TextParams,
     VerticalAlignment,
 };
 
@@ -33,13 +33,15 @@ impl text::Renderer for Renderer {
     ) -> Self::Output {
         (
             Primitive::Text {
-                content: content.to_string(),
-                size: f32::from(size),
                 bounds,
-                color: color.unwrap_or(defaults.text.color),
-                font,
-                horizontal_alignment,
-                vertical_alignment,
+                text: TextParams {
+                    content: content.to_string(),
+                    size: f32::from(size),
+                    color: color.unwrap_or(defaults.text.color),
+                    font,
+                    horizontal_alignment,
+                    vertical_alignment,
+                },
             },
             MouseCursor::OutOfBounds,
         )

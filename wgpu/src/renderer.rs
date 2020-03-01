@@ -3,8 +3,8 @@ use crate::{
     Target, Transformation,
 };
 use iced_native::{
-    layout, Background, Color, Layout, MouseCursor, Point, Rectangle, Vector,
-    Widget,
+    layout, Background, Color, Layout, MouseCursor, Point, Rectangle, TextParams,
+    Vector, Widget,
 };
 use std::sync::Arc;
 
@@ -132,13 +132,16 @@ impl Renderer {
                 }
             }
             Primitive::Text {
-                content,
                 bounds,
-                size,
-                color,
-                font,
-                horizontal_alignment,
-                vertical_alignment,
+                text:
+                    TextParams {
+                        content,
+                        size,
+                        color,
+                        font,
+                        horizontal_alignment,
+                        vertical_alignment,
+                    },
             } => {
                 let x = match horizontal_alignment {
                     iced_native::HorizontalAlignment::Left => bounds.x,

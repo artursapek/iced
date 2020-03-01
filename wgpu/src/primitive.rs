@@ -1,6 +1,6 @@
 use iced_native::{
-    image, svg, Background, Color, Font, HorizontalAlignment, Point, Rectangle,
-    Vector, VerticalAlignment,
+    image, svg, Background, Color,  Point, Rectangle,
+    Vector, TextParams,
 };
 
 use crate::triangle;
@@ -18,20 +18,10 @@ pub enum Primitive {
     },
     /// A text primitive
     Text {
-        /// The contents of the text
-        content: String,
-        /// The bounds of the text
+        /// hi
         bounds: Rectangle,
-        /// The color of the text
-        color: Color,
-        /// The size of the text
-        size: f32,
-        /// The font of the text
-        font: Font,
-        /// The horizontal alignment of the text
-        horizontal_alignment: HorizontalAlignment,
-        /// The vertical alignment of the text
-        vertical_alignment: VerticalAlignment,
+        /// hi
+        text: TextParams,
     },
     /// A quad primitive
     Quad {

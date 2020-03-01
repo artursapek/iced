@@ -24,6 +24,7 @@ mod point;
 mod rectangle;
 mod size;
 mod vector;
+mod text;
 
 pub use align::{Align, HorizontalAlignment, VerticalAlignment};
 pub use background::Background;
@@ -34,3 +35,4 @@ pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
 pub use vector::Vector;
+pub use text::TextParams;

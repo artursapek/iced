@@ -2,7 +2,7 @@ use crate::{text_input::StyleSheet, Primitive, Renderer};
 
 use iced_native::{
     text_input, Background, Color, Font, HorizontalAlignment, MouseCursor,
-    Point, Rectangle, Size, Vector, VerticalAlignment,
+    Point, Rectangle, Size, TextParams, Vector, VerticalAlignment,
 };
 use std::f32;
 
@@ -89,25 +89,27 @@ impl text_input::Renderer for Renderer {
         let text = value.to_string();
 
         let text_value = Primitive::Text {
-            content: if text.is_empty() {
-                placeholder.to_string()
-            } else {
-                text.clone()
-            },
-            color: if text.is_empty() {
-                style_sheet.placeholder_color()
-            } else {
-                style_sheet.value_color()
-            }
-            .into(),
-            font,
             bounds: Rectangle {
                 width: f32::INFINITY,
                 ..text_bounds
             },
-            size: f32::from(size),
-            horizontal_alignment: HorizontalAlignment::Left,
-            vertical_alignment: VerticalAlignment::Center,
+            text: TextParams {
+                content: if text.is_empty() {
+                    placeholder.to_string()
+                } else {
+                    text.clone()
+                },
+                color: if text.is_empty() {
+                    style_sheet.placeholder_color()
+                } else {
+                    style_sheet.value_color()
+                }
+                .into(),
+                font,
+                size: f32::from(size),
+                horizontal_alignment: HorizontalAlignment::Left,
+                vertical_alignment: VerticalAlignment::Center,
+            },
         };
 
         let (contents_primitive, offset) = if state.is_focused() {

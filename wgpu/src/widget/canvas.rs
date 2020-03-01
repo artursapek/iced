@@ -20,6 +20,7 @@ mod drawable;
 mod fill;
 mod frame;
 mod stroke;
+mod text;
 
 pub use drawable::Drawable;
 pub use fill::Fill;

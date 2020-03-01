@@ -1,6 +1,6 @@
 use crate::{checkbox::StyleSheet, Primitive, Renderer};
 use iced_native::{
-    checkbox, HorizontalAlignment, MouseCursor, Rectangle, VerticalAlignment,
+    checkbox, HorizontalAlignment, MouseCursor, Rectangle, VerticalAlignment, TextParams,
 };
 
 impl checkbox::Renderer for Renderer {
@@ -35,13 +35,15 @@ impl checkbox::Renderer for Renderer {
             Primitive::Group {
                 primitives: if is_checked {
                     let check = Primitive::Text {
+                        bounds: bounds,
+                        text: TextParams {
                         content: crate::text::CHECKMARK_ICON.to_string(),
                         font: crate::text::BUILTIN_ICONS,
                         size: bounds.height * 0.7,
-                        bounds: bounds,
                         color: style.checkmark_color,
                         horizontal_alignment: HorizontalAlignment::Center,
                         vertical_alignment: VerticalAlignment::Center,
+                        },
                     };
 
                     vec![checkbox, check, label]

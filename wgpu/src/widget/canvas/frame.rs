@@ -1,8 +1,8 @@
-use iced_native::{Point, Size, Vector};
+use iced_native::{Color, Point, Size, Vector, TextParams};
 
 use crate::{
     canvas::{Fill, Path, Stroke},
-    triangle,
+    triangle, Primitive,
 };
 
 /// The frame of a [`Canvas`].
@@ -14,6 +14,7 @@ pub struct Frame {
     height: f32,
     buffers: lyon::tessellation::VertexBuffers<triangle::Vertex2D, u32>,
     transforms: Transforms,
+    text: Vec<TextParams>,
 }
 
 #[derive(Debug)]
@@ -47,6 +48,7 @@ impl Frame {
                     is_identity: true,
                 },
             },
+            text: Vec::new(),
         }
     }
 
@@ -152,6 +154,11 @@ impl Frame {
         };
 
         let _ = result.expect("Stroke path");
+    }
+
+    /// Draw text :)
+    pub fn text(&mut self, text: TextParams) {
+        self.text.push(text);
     }
 
     /// Stores the current transform of the [`Frame`] and executes the given
