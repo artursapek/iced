@@ -97,9 +97,9 @@ where
         *self.cache.state.borrow_mut() = State::Filled {
             bounds: current_bounds,
             mesh: mesh.clone(),
-            texts,
+            texts: texts.clone(),
         };
 
-        mesh
+        (mesh, texts)
     }
 }

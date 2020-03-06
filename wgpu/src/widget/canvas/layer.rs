@@ -4,6 +4,7 @@ mod cache;
 pub use cache::Cache;
 
 use crate::triangle;
+use crate::canvas::TextNode;
 
 use iced_native::Size;
 use std::sync::Arc;
@@ -21,5 +22,5 @@ pub trait Layer: std::fmt::Debug {
     ///
     /// [`Layer`]: trait.Layer.html
     /// [`Mesh2D`]: ../../../triangle/struct.Mesh2D.html
-    fn draw(&self, bounds: Size) -> Arc<triangle::Mesh2D>;
+    fn draw(&self, bounds: Size) -> (Arc<triangle::Mesh2D>, Vec<TextNode>);
 }

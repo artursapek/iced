@@ -156,6 +156,11 @@ impl Frame {
         let _ = result.expect("Stroke path");
     }
 
+    /// Haiiiiiiii
+    pub fn text(&mut self, text: TextNode) {
+        self.texts.push(text);
+    }
+
     /// Stores the current transform of the [`Frame`] and executes the given
     /// drawing operations, restoring the transform afterwards.
     ///

@@ -4,17 +4,17 @@ use iced_native::{Color, Font, HorizontalAlignment, Rectangle, VerticalAlignment
 #[derive(Debug, Clone)]
 pub struct TextNode {
     /// The contents of the text
-    content: String,
+    pub content: String,
     /// The bounds of the text
-    bounds: Rectangle,
+    pub bounds: Rectangle,
     /// The color of the text
-    color: Color,
+    pub color: Color,
     /// The size of the text
-    size: f32,
+    pub size: f32,
     /// The font of the text
-    font: Font,
+    pub font: Font,
     /// The horizontal alignment of the text
-    horizontal_alignment: HorizontalAlignment,
+    pub horizontal_alignment: HorizontalAlignment,
     /// The vertical alignment of the text
-    vertical_alignment: VerticalAlignment,
+    pub vertical_alignment: VerticalAlignment,
 }
