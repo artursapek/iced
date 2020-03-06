@@ -1,12 +1,10 @@
 use crate::{
-    canvas::{Drawable, Frame, Layer},
+    canvas::{Drawable, Frame, Layer, TextNode},
     triangle,
 };
 
 use iced_native::Size;
-use std::cell::RefCell;
-use std::marker::PhantomData;
-use std::sync::Arc;
+use std::{cell::RefCell, marker::PhantomData, sync::Arc};
 
 /// A simple cache that stores generated geometry to avoid recomputation.
 ///
@@ -27,6 +25,7 @@ enum State {
     Filled {
         mesh: Arc<triangle::Mesh2D>,
         bounds: Size,
+        texts: Vec<TextNode>,
     },
 }
 
@@ -75,25 +74,30 @@ impl<'a, T> Layer for Bind<'a, T>
 where
     T: Drawable + std::fmt::Debug,
 {
-    fn draw(&self, current_bounds: Size) -> Arc<triangle::Mesh2D> {
+    fn draw(&self, current_bounds: Size) -> (Arc<triangle::Mesh2D>, Vec<TextNode>) {
         use std::ops::Deref;
 
-        if let State::Filled { mesh, bounds } =
-            self.cache.state.borrow().deref()
+        if let State::Filled {
+            bounds,
+            mesh,
+            texts,
+        } = self.cache.state.borrow().deref()
         {
             if *bounds == current_bounds {
-                return mesh.clone();
+                return (mesh.clone(), texts.clone());
             }
         }
 
         let mut frame = Frame::new(current_bounds.width, current_bounds.height);
         self.input.draw(&mut frame);
 
+        let texts = frame.get_texts();
         let mesh = Arc::new(frame.into_mesh());
 
         *self.cache.state.borrow_mut() = State::Filled {
-            mesh: mesh.clone(),
             bounds: current_bounds,
+            mesh: mesh.clone(),
+            texts,
         };
 
         mesh

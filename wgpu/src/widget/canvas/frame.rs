@@ -1,7 +1,7 @@
 use iced_native::{Point, Size, Vector};
 
 use crate::{
-    canvas::{Fill, Path, Stroke},
+    canvas::{Fill, Path, Stroke, TextNode},
     triangle,
 };
 
@@ -14,6 +14,7 @@ pub struct Frame {
     height: f32,
     buffers: lyon::tessellation::VertexBuffers<triangle::Vertex2D, u32>,
     transforms: Transforms,
+    texts: Vec<TextNode>,
 }
 
 #[derive(Debug)]
@@ -40,6 +41,7 @@ impl Frame {
             width,
             height,
             buffers: lyon::tessellation::VertexBuffers::new(),
+            texts: Vec::new(),
             transforms: Transforms {
                 previous: Vec::new(),
                 current: Transform {
@@ -217,6 +219,13 @@ impl Frame {
             vertices: self.buffers.vertices,
             indices: self.buffers.indices,
         }
+    }
+
+    /// Produces the text nodes that have been drawn on the [`Frame`].
+    ///
+    /// [`Frame`]: struct.Frame.html
+    pub fn get_texts(&self) -> Vec<TextNode> {
+        self.texts.clone()
     }
 }
 
