@@ -222,22 +222,24 @@ impl Frame {
     ///
     /// [`Frame`]: struct.Frame.html
     pub fn into_primitive(self, origin: Point) -> Primitive {
-        let mut primitives = Vec::new();
+        let mut primitives: Vec<Primitive> = self
+            .texts
+            .into_iter()
+            .map(|mut t| {
+                t.bounds.x += origin.x;
+                t.bounds.y += origin.y;
 
-        for mut t in self.texts {
-            t.bounds.x += origin.x;
-            t.bounds.y += origin.y;
-
-            primitives.push(Primitive::Text {
-                content: t.content,
-                bounds: t.bounds,
-                color: t.color,
-                size: t.size,
-                font: t.font,
-                horizontal_alignment: t.horizontal_alignment,
-                vertical_alignment: t.vertical_alignment,
-            });
-        }
+                Primitive::Text {
+                    content: t.content,
+                    bounds: t.bounds,
+                    color: t.color,
+                    size: t.size,
+                    font: t.font,
+                    horizontal_alignment: t.horizontal_alignment,
+                    vertical_alignment: t.vertical_alignment,
+                }
+            })
+            .collect();
 
         primitives.push(Primitive::Mesh2D {
             origin,
