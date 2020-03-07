@@ -123,29 +123,7 @@ impl<'a, Message> Widget<Message, Renderer> for Canvas<'a> {
                 primitives: self
                     .layers
                     .iter()
-                    .flat_map(|layer| {
-                        let (buffers, texts) = layer.draw(size);
-
-                        let mut primitives =
-                            vec![Primitive::Mesh2D { origin, buffers }];
-
-                        for mut t in texts {
-                            t.bounds.x += origin.x;
-                            t.bounds.y += origin.y;
-
-                            primitives.push(Primitive::Text {
-                                content: t.content,
-                                bounds: t.bounds,
-                                color: t.color,
-                                size: t.size,
-                                font: t.font,
-                                horizontal_alignment: t.horizontal_alignment,
-                                vertical_alignment: t.vertical_alignment,
-                            });
-                        }
-
-                        primitives
-                    })
+                    .map(|layer| layer.draw(origin, size))
                     .collect(),
             },
             MouseCursor::Idle,
