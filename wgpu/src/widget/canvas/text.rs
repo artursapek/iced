@@ -1,6 +1,6 @@
 use iced_native::{Color, Font, HorizontalAlignment, Rectangle, VerticalAlignment};
 
-/// Greetings, m'lord!
+/// A text node to be drawn to a canvas
 #[derive(Debug, Clone)]
 pub struct TextNode {
     /// The contents of the text

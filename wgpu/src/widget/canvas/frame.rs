@@ -158,7 +158,10 @@ impl Frame {
         let _ = result.expect("Stroke path");
     }
 
-    /// Haiiiiiiii
+    /// Draws the text of the given [`TextNode`] on the [`Frame`]
+    ///
+    /// [`TextNode`]: struct.TextNode.html
+    /// [`Frame`]: struct.Frame.html
     pub fn text(&mut self, text: TextNode) {
         self.texts.push(text);
     }
