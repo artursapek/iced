@@ -20,14 +20,14 @@ pub mod path;
 mod drawable;
 mod fill;
 mod frame;
-mod handler;
+mod state;
 mod stroke;
 mod text;
 
 pub use drawable::Drawable;
 pub use fill::Fill;
 pub use frame::Frame;
-pub use handler::Handler;
+pub use state::State;
 pub use layer::Layer;
 pub use path::Path;
 pub use stroke::{LineCap, LineJoin, Stroke};
@@ -92,31 +92,31 @@ pub use text::Text;
 ///     .push(cache.with(&Circle { radius: 50.0 }));
 /// ```
 #[derive(Debug)]
-pub struct Canvas<'a, H>
+pub struct Canvas<'a, S>
 where
-    H: Handler,
+    S: State,
 {
     width: Length,
     height: Length,
-    handler: &'a mut H,
-    layers: Vec<Box<dyn Layer<H> + 'a>>,
+    state: &'a mut S,
+    layers: Vec<Box<dyn Layer<S> + 'a>>,
 }
 
-impl<'a, H> Canvas<'a, H>
+impl<'a, S> Canvas<'a, S>
 where
-    H: Handler,
+    S: State,
 {
     const DEFAULT_SIZE: u16 = 100;
 
     /// Creates a new [`Canvas`] with no layers.
     ///
     /// [`Canvas`]: struct.Canvas.html
-    pub fn new(handler: &'a mut H) -> Self {
+    pub fn new(state: &'a mut S) -> Self {
         Canvas {
             width: Length::Units(Self::DEFAULT_SIZE),
             height: Length::Units(Self::DEFAULT_SIZE),
             layers: Vec::new(),
-            handler,
+            state,
         }
     }
 
@@ -142,14 +142,14 @@ where
     ///
     /// [`Layer`]: layer/trait.Layer.html
     /// [`Canvas`]: struct.Canvas.html
-    pub fn push(mut self, layer: impl Layer<H> + 'a) -> Self {
+    pub fn push(mut self, layer: impl Layer<S> + 'a) -> Self {
         self.layers.push(Box::new(layer));
         self
     }
 }
 
-impl<'a, Message, H: Handler + 'static> Widget<Message, Renderer>
-    for Canvas<'a, H>
+impl<'a, Message, S: State + 'static> Widget<Message, Renderer>
+    for Canvas<'a, S>
 {
     fn width(&self) -> Length {
         self.width
@@ -179,7 +179,7 @@ impl<'a, Message, H: Handler + 'static> Widget<Message, Renderer>
         _renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) {
-        self.handler.on_event(event, cursor_position, clipboard);
+        self.state.on_event(event, cursor_position, clipboard);
     }
 
     fn draw(
@@ -200,7 +200,7 @@ impl<'a, Message, H: Handler + 'static> Widget<Message, Renderer>
                     .iter()
                     .map(|layer| Primitive::Cached {
                         origin,
-                        cache: layer.draw(size, &self.handler),
+                        cache: layer.draw(size, &self.state),
                     })
                     .collect(),
             },
@@ -209,19 +209,19 @@ impl<'a, Message, H: Handler + 'static> Widget<Message, Renderer>
     }
 
     fn hash_layout(&self, state: &mut Hasher) {
-        std::any::TypeId::of::<Canvas<'static, H>>().hash(state);
+        std::any::TypeId::of::<Canvas<'static, S>>().hash(state);
 
         self.width.hash(state);
         self.height.hash(state);
     }
 }
 
-impl<'a, H, Message> From<Canvas<'a, H>> for Element<'a, Message, Renderer>
+impl<'a, S, Message> From<Canvas<'a, S>> for Element<'a, Message, Renderer>
 where
     Message: 'static,
-    H: Handler + 'static,
+    S: State + 'static,
 {
-    fn from(canvas: Canvas<'a, H>) -> Element<'a, Message, Renderer> {
+    fn from(canvas: Canvas<'a, S>) -> Element<'a, Message, Renderer> {
         Element::new(canvas)
     }
 }

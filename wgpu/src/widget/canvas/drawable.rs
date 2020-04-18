@@ -3,10 +3,10 @@ use crate::canvas::Frame;
 /// A type that can be drawn on a [`Frame`].
 ///
 /// [`Frame`]: struct.Frame.html
-pub trait Drawable {
+pub trait Drawable<Handler> {
     /// Draws the [`Drawable`] on the given [`Frame`].
     ///
     /// [`Drawable`]: trait.Drawable.html
     /// [`Frame`]: struct.Frame.html
-    fn draw(&self, frame: &mut Frame);
+    fn draw(&self, frame: &mut Frame, handler: &Handler);
 }

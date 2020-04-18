@@ -3,7 +3,7 @@ use iced_native::{
 };
 
 /// hi!
-pub trait Handler: std::fmt::Debug {
+pub trait State: std::fmt::Debug {
     /// hi!
     fn on_event(
         &mut self,

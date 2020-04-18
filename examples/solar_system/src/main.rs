@@ -22,23 +22,8 @@ pub fn main() {
     })
 }
 
-#[derive(Debug)]
-struct SolarSystemHandler {}
-
-impl canvas::Handler for SolarSystemHandler {
-    fn on_event(
-        &mut self,
-        event: Event,
-        cursor_position: Point,
-        clipboard: Option<&dyn Clipboard>,
-    ) {
-        dbg!("receiving event! {:?}", event);
-    }
-}
-
 struct SolarSystem {
     state: State,
-    handler: SolarSystemHandler,
     solar_system: canvas::layer::Cache<State>,
 }
 
@@ -56,7 +41,6 @@ impl Application for SolarSystem {
         (
             SolarSystem {
                 state: State::new(),
-                handler: SolarSystemHandler {},
                 solar_system: Default::default(),
             },
             Command::none(),
@@ -84,10 +68,10 @@ impl Application for SolarSystem {
     }
 
     fn view(&mut self) -> Element<Message> {
-        let canvas = Canvas::new(&mut self.handler)
+        let canvas = Canvas::new(&mut self.state)
             .width(Length::Fill)
             .height(Length::Fill)
-            .push(self.solar_system.with(&self.state));
+            .push(self.solar_system.with(&SolarSystemHandler()));
 
         Container::new(canvas)
             .width(Length::Fill)
@@ -106,12 +90,6 @@ struct State {
 }
 
 impl State {
-    const SUN_RADIUS: f32 = 70.0;
-    const ORBIT_RADIUS: f32 = 150.0;
-    const EARTH_RADIUS: f32 = 12.0;
-    const MOON_RADIUS: f32 = 4.0;
-    const MOON_DISTANCE: f32 = 28.0;
-
     pub fn new() -> State {
         let now = Instant::now();
         let (width, height) = window::Settings::default().size;
@@ -144,8 +122,30 @@ impl State {
     }
 }
 
-impl canvas::Drawable for State {
-    fn draw(&self, frame: &mut canvas::Frame) {
+impl canvas::State for State {
+    fn on_event(
+        &mut self,
+        event: Event,
+        cursor_position: Point,
+        clipboard: Option<&dyn Clipboard>,
+    ) {
+        dbg!("receiving event! {:?}", event);
+    }
+}
+
+#[derive(Debug)]
+pub struct SolarSystemHandler();
+
+impl SolarSystemHandler {
+    const SUN_RADIUS: f32 = 70.0;
+    const ORBIT_RADIUS: f32 = 150.0;
+    const EARTH_RADIUS: f32 = 12.0;
+    const MOON_RADIUS: f32 = 4.0;
+    const MOON_DISTANCE: f32 = 28.0;
+}
+
+impl canvas::Drawable<State> for SolarSystemHandler {
+    fn draw(&self, frame: &mut canvas::Frame, state: &State) {
         use canvas::{Path, Stroke};
         use std::f32::consts::PI;
 
@@ -154,7 +154,7 @@ impl canvas::Drawable for State {
         let space = Path::rectangle(Point::new(0.0, 0.0), frame.size());
 
         let stars = Path::new(|path| {
-            for (p, size) in &self.stars {
+            for (p, size) in &state.stars {
                 path.rectangle(*p, Size::new(*size, *size));
             }
         });
@@ -174,7 +174,7 @@ impl canvas::Drawable for State {
             },
         );
 
-        let elapsed = self.current - self.start;
+        let elapsed = state.current - state.start;
         let elapsed_seconds = elapsed.as_secs() as f32;
         let elapsed_millis = elapsed.subsec_millis() as f32;
 

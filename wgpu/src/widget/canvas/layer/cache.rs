@@ -1,12 +1,12 @@
 use crate::{
-    canvas::{Drawable, Frame, Layer},
+    canvas::{Drawable, Frame, Layer, State},
     Primitive,
 };
 
 use iced_native::Size;
 use std::{cell::RefCell, marker::PhantomData, sync::Arc};
 
-enum State {
+enum CacheState {
     Empty,
     Filled {
         bounds: Size,
@@ -14,9 +14,9 @@ enum State {
     },
 }
 
-impl Default for State {
+impl Default for CacheState {
     fn default() -> Self {
-        State::Empty
+        CacheState::Empty
     }
 }
 /// A simple cache that stores generated geometry to avoid recomputation.
@@ -27,33 +27,36 @@ impl Default for State {
 /// [`Layer`]: ../trait.Layer.html
 /// [`Cache`]: struct.Cache.html
 #[derive(Debug)]
-pub struct Cache<T: Drawable> {
-    input: PhantomData<T>,
-    state: RefCell<State>,
+pub struct Cache<S>
+where
+    S: State,
+{
+    handler: PhantomData<dyn Drawable<S>>,
+    state: RefCell<CacheState>,
 }
 
-impl<T> Default for Cache<T>
+impl<S> Default for Cache<S>
 where
-    T: Drawable,
+    S: State,
 {
     fn default() -> Self {
         Self {
-            input: PhantomData,
+            handler: PhantomData,
             state: Default::default(),
         }
     }
 }
 
-impl<T> Cache<T>
+impl<S> Cache<S>
 where
-    T: Drawable + std::fmt::Debug,
+    S: State,
 {
     /// Creates a new empty [`Cache`].
     ///
     /// [`Cache`]: struct.Cache.html
     pub fn new() -> Self {
         Cache {
-            input: PhantomData,
+            handler: PhantomData,
             state: Default::default(),
         }
     }
@@ -62,7 +65,7 @@ where
     ///
     /// [`Cached`]: struct.Cached.html
     pub fn clear(&mut self) {
-        *self.state.borrow_mut() = State::Empty;
+        *self.state.borrow_mut() = CacheState::Empty;
     }
 
     /// Binds the [`Cache`] with some data, producing a [`Layer`] that can be
@@ -71,28 +74,33 @@ where
     /// [`Cache`]: struct.Cache.html
     /// [`Layer`]: ../trait.Layer.html
     /// [`Canvas`]: ../../struct.Canvas.html
-    pub fn with<'a, H>(&'a self, input: &'a T) -> impl Layer<H> + 'a {
+    pub fn with<'a, T: Drawable<S> + std::fmt::Debug>(&'a self, handler: &'a T) -> impl Layer<S> + 'a {
         Bind {
             cache: self,
-            input: input,
+            handler: handler,
         }
     }
 }
 
 #[derive(Debug)]
-struct Bind<'a, T: Drawable> {
-    cache: &'a Cache<T>,
-    input: &'a T,
+struct Bind<'a, S, T>
+where
+    S: State,
+    T: Drawable<S>,
+{
+    cache: &'a Cache<S>,
+    handler: &'a T,
 }
 
-impl<'a, H, T> Layer<H> for Bind<'a, T>
+impl<'a, S, T> Layer<S> for Bind<'a, S, T>
 where
-    T: Drawable + std::fmt::Debug,
+    S: State,
+    T: Drawable<S> + std::fmt::Debug,
 {
-    fn draw(&self, current_bounds: Size, handler: &H) -> Arc<Primitive> {
+    fn draw(&self, current_bounds: Size, state: &S) -> Arc<Primitive> {
         use std::ops::Deref;
 
-        if let State::Filled { bounds, primitive } =
+        if let CacheState::Filled { bounds, primitive } =
             self.cache.state.borrow().deref()
         {
             if *bounds == current_bounds {
@@ -101,11 +109,11 @@ where
         }
 
         let mut frame = Frame::new(current_bounds.width, current_bounds.height);
-        self.input.draw(&mut frame);
+        self.handler.draw(&mut frame, &state);
 
         let primitive = Arc::new(frame.into_primitive());
 
-        *self.cache.state.borrow_mut() = State::Filled {
+        *self.cache.state.borrow_mut() = CacheState::Filled {
             bounds: current_bounds,
             primitive: primitive.clone(),
         };
@@ -114,11 +122,11 @@ where
     }
 }
 
-impl std::fmt::Debug for State {
+impl std::fmt::Debug for CacheState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            State::Empty => write!(f, "Empty"),
-            State::Filled { primitive, bounds } => f
+            CacheState::Empty => write!(f, "Empty"),
+            CacheState::Filled { primitive, bounds } => f
                 .debug_struct("Filled")
                 .field("primitive", primitive)
                 .field("bounds", bounds)
