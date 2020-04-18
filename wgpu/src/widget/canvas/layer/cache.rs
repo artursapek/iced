@@ -71,7 +71,7 @@ where
     /// [`Cache`]: struct.Cache.html
     /// [`Layer`]: ../trait.Layer.html
     /// [`Canvas`]: ../../struct.Canvas.html
-    pub fn with<'a>(&'a self, input: &'a T) -> impl Layer + 'a {
+    pub fn with<'a, H>(&'a self, input: &'a T) -> impl Layer<H> + 'a {
         Bind {
             cache: self,
             input: input,
@@ -85,11 +85,11 @@ struct Bind<'a, T: Drawable> {
     input: &'a T,
 }
 
-impl<'a, T> Layer for Bind<'a, T>
+impl<'a, H, T> Layer<H> for Bind<'a, T>
 where
     T: Drawable + std::fmt::Debug,
 {
-    fn draw(&self, current_bounds: Size) -> Arc<Primitive> {
+    fn draw(&self, current_bounds: Size, handler: &H) -> Arc<Primitive> {
         use std::ops::Deref;
 
         if let State::Filled { bounds, primitive } =

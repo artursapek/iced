@@ -11,7 +11,7 @@ use std::sync::Arc;
 /// A layer that can be presented at a [`Canvas`].
 ///
 /// [`Canvas`]: ../struct.Canvas.html
-pub trait Layer: std::fmt::Debug {
+pub trait Layer<Handler>: std::fmt::Debug {
     /// Draws the [`Layer`] in the given bounds and produces a [`Primitive`] as
     /// a result.
     ///
@@ -21,5 +21,5 @@ pub trait Layer: std::fmt::Debug {
     ///
     /// [`Layer`]: trait.Layer.html
     /// [`Primitive`]: ../../../enum.Primitive.html
-    fn draw(&self, bounds: Size) -> Arc<Primitive>;
+    fn draw(&self, bounds: Size, handler: &Handler) -> Arc<Primitive>;
 }

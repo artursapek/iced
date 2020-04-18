@@ -11,6 +11,8 @@ use iced::{
     Element, Length, Point, Settings, Size, Subscription, Vector,
 };
 
+use iced_native::{Clipboard, Event};
+
 use std::time::Instant;
 
 pub fn main() {
@@ -20,8 +22,23 @@ pub fn main() {
     })
 }
 
+#[derive(Debug)]
+struct SolarSystemHandler {}
+
+impl canvas::Handler for SolarSystemHandler {
+    fn on_event(
+        &mut self,
+        event: Event,
+        cursor_position: Point,
+        clipboard: Option<&dyn Clipboard>,
+    ) {
+        dbg!("receiving event! {:?}", event);
+    }
+}
+
 struct SolarSystem {
     state: State,
+    handler: SolarSystemHandler,
     solar_system: canvas::layer::Cache<State>,
 }
 
@@ -39,6 +56,7 @@ impl Application for SolarSystem {
         (
             SolarSystem {
                 state: State::new(),
+                handler: SolarSystemHandler {},
                 solar_system: Default::default(),
             },
             Command::none(),
@@ -66,7 +84,7 @@ impl Application for SolarSystem {
     }
 
     fn view(&mut self) -> Element<Message> {
-        let canvas = Canvas::new()
+        let canvas = Canvas::new(&mut self.handler)
             .width(Length::Fill)
             .height(Length::Fill)
             .push(self.solar_system.with(&self.state));
