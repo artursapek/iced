@@ -27,7 +27,8 @@ pub fn main() {
 
 struct SolarSystem {
     state: State,
-    solar_system: canvas::layer::Cache<State>,
+    stars_layer: canvas::layer::Cache<State>,
+    planets_layer: canvas::layer::Cache<State>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -44,7 +45,8 @@ impl Application for SolarSystem {
         (
             SolarSystem {
                 state: State::new(),
-                solar_system: Default::default(),
+                stars_layer: Default::default(),
+                planets_layer: Default::default(),
             },
             Command::none(),
         )
@@ -58,7 +60,7 @@ impl Application for SolarSystem {
         match message {
             Message::Tick(instant) => {
                 self.state.update(instant);
-                self.solar_system.clear();
+                self.planets_layer.clear();
             }
         }
 
@@ -74,7 +76,8 @@ impl Application for SolarSystem {
         let canvas = Canvas::new(&mut self.state)
             .width(Length::Fill)
             .height(Length::Fill)
-            .push(self.solar_system.with(&SolarSystemHandler()));
+            .push(self.stars_layer.with(&StarsLayerHandler()))
+            .push(self.planets_layer.with(&PlanetsLayerHandler()));
 
         Container::new(canvas)
             .width(Length::Fill)
@@ -110,12 +113,13 @@ impl State {
 }
 
 impl canvas::State for State {
-    fn on_event(
+    fn on_event<'a>(
         &mut self,
         event: Event,
         cursor_position: Point,
         layout: Layout<'_>,
         clipboard: Option<&dyn Clipboard>,
+        layers: &mut Vec<Box<dyn canvas::Layer<Self> + 'a>>,
     ) {
         match event {
             Event::Mouse(mouse::Event::Input {
@@ -140,7 +144,10 @@ impl canvas::State for State {
                             ),
                             rng.gen_range(0.5, 1.0) as f32,
                         ))
-                    }
+                    };
+
+                    // Clear stars layer
+                    layers[0].clear();
                 }
                 ButtonState::Released => {},
             },
@@ -150,9 +157,26 @@ impl canvas::State for State {
 }
 
 #[derive(Debug)]
-pub struct SolarSystemHandler();
+pub struct StarsLayerHandler();
 
-impl SolarSystemHandler {
+
+impl canvas::Drawable<State> for StarsLayerHandler {
+    fn draw(&self, frame: &mut canvas::Frame, state: &State) {
+        use canvas::Path;
+        let stars = Path::new(|path| {
+            for (p, size) in &state.stars {
+                path.rectangle(*p, Size::new(*size, *size));
+            }
+        });
+
+        frame.fill(&stars, Color::WHITE);
+    }
+}
+
+#[derive(Debug)]
+pub struct PlanetsLayerHandler();
+
+impl PlanetsLayerHandler {
     const SUN_RADIUS: f32 = 70.0;
     const ORBIT_RADIUS: f32 = 150.0;
     const EARTH_RADIUS: f32 = 12.0;
@@ -160,7 +184,7 @@ impl SolarSystemHandler {
     const MOON_DISTANCE: f32 = 28.0;
 }
 
-impl canvas::Drawable<State> for SolarSystemHandler {
+impl canvas::Drawable<State> for PlanetsLayerHandler {
     fn draw(&self, frame: &mut canvas::Frame, state: &State) {
         use canvas::{Path, Stroke};
         use std::f32::consts::PI;
@@ -169,17 +193,10 @@ impl canvas::Drawable<State> for SolarSystemHandler {
 
         let space = Path::rectangle(Point::new(0.0, 0.0), frame.size());
 
-        let stars = Path::new(|path| {
-            for (p, size) in &state.stars {
-                path.rectangle(*p, Size::new(*size, *size));
-            }
-        });
-
         let sun = Path::circle(center, Self::SUN_RADIUS);
         let orbit = Path::circle(center, Self::ORBIT_RADIUS);
 
         frame.fill(&space, Color::BLACK);
-        frame.fill(&stars, Color::WHITE);
         frame.fill(&sun, Color::from_rgb8(0xF9, 0xD7, 0x1C));
         frame.stroke(
             &orbit,

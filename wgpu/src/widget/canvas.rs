@@ -179,7 +179,7 @@ impl<'a, Message, S: State + 'static> Widget<Message, Renderer>
         _renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) {
-        self.state.on_event(event, cursor_position, layout, clipboard);
+        self.state.on_event(event, cursor_position, layout, clipboard, &mut self.layers);
     }
 
     fn draw(
