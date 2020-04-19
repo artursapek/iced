@@ -26,12 +26,12 @@ mod stroke;
 mod text;
 
 pub use drawable::Drawable;
+pub use program::{Program, BasicProgram};
 pub use event::Event;
 pub use fill::Fill;
 pub use frame::Frame;
 pub use layer::Layer;
 pub use path::Path;
-pub use program::Program;
 pub use stroke::{LineCap, LineJoin, Stroke};
 pub use text::Text;
 
@@ -96,7 +96,6 @@ pub struct Canvas<'a, P: Program> {
     width: Length,
     height: Length,
     program: &'a mut P,
-    input: &'a P::Input,
 }
 
 impl<'a, P: Program> Canvas<'a, P> {
@@ -105,12 +104,11 @@ impl<'a, P: Program> Canvas<'a, P> {
     /// Creates a new [`Canvas`] with no layers.
     ///
     /// [`Canvas`]: struct.Canvas.html
-    pub fn new(program: &'a mut P, input: &'a P::Input) -> Self {
+    pub fn new(program: &'a mut P) -> Self {
         Canvas {
             width: Length::Units(Self::DEFAULT_SIZE),
             height: Length::Units(Self::DEFAULT_SIZE),
             program,
-            input,
         }
     }
 
@@ -178,7 +176,7 @@ impl<'a, Message, P: Program> Widget<Message, Renderer> for Canvas<'a, P> {
         };
 
         if let Some(canvas_event) = canvas_event {
-            self.program.update(canvas_event, bounds.size(), self.input)
+            self.program.update(canvas_event, bounds.size())
         }
     }
 
@@ -197,7 +195,7 @@ impl<'a, Message, P: Program> Widget<Message, Renderer> for Canvas<'a, P> {
             Primitive::Group {
                 primitives: self
                     .program
-                    .layers(self.input)
+                    .layers()
                     .iter()
                     .map(|layer| Primitive::Cached {
                         origin,

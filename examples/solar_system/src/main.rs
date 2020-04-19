@@ -21,8 +21,7 @@ pub fn main() {
 }
 
 struct SolarSystem {
-    state: State,
-    solar_system: canvas::layer::Cache<State>,
+    program: canvas::BasicProgram<State>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -38,8 +37,10 @@ impl Application for SolarSystem {
     fn new(_flags: ()) -> (Self, Command<Message>) {
         (
             SolarSystem {
-                state: State::new(),
-                solar_system: Default::default(),
+                program: canvas::BasicProgram {
+                    input: State::new(),
+                    layer: Default::default(),
+                },
             },
             Command::none(),
         )
@@ -52,8 +53,8 @@ impl Application for SolarSystem {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::Tick(instant) => {
-                self.state.update(instant);
-                self.solar_system.clear();
+                self.program.input.update(instant);
+                self.program.layer.clear();
             }
         }
 
@@ -66,7 +67,7 @@ impl Application for SolarSystem {
     }
 
     fn view(&mut self) -> Element<Message> {
-        let canvas = Canvas::new(&mut self.solar_system, &self.state)
+        let canvas = Canvas::new(&mut self.program)
             .width(Length::Fill)
             .height(Length::Fill);
 
