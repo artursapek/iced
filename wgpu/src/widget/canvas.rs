@@ -173,13 +173,13 @@ impl<'a, Message, S: State + 'static> Widget<Message, Renderer>
     fn on_event(
         &mut self,
         event: Event,
-        _layout: Layout<'_>,
+        layout: Layout<'_>,
         cursor_position: Point,
         _messages: &mut Vec<Message>,
         _renderer: &Renderer,
         clipboard: Option<&dyn Clipboard>,
     ) {
-        self.state.on_event(event, cursor_position, clipboard);
+        self.state.on_event(event, cursor_position, layout, clipboard);
     }
 
     fn draw(

@@ -11,7 +11,10 @@ use iced::{
     Element, Length, Point, Settings, Size, Subscription, Vector,
 };
 
-use iced_native::{Clipboard, Event};
+use iced_native::{
+    input::{mouse, ButtonState},
+    Clipboard, Event, Layout,
+};
 
 use std::time::Instant;
 
@@ -97,23 +100,7 @@ impl State {
         State {
             start: now,
             current: now,
-            stars: {
-                use rand::Rng;
-
-                let mut rng = rand::thread_rng();
-
-                (0..100)
-                    .map(|_| {
-                        (
-                            Point::new(
-                                rng.gen_range(0.0, width as f32),
-                                rng.gen_range(0.0, height as f32),
-                            ),
-                            rng.gen_range(0.5, 1.0),
-                        )
-                    })
-                    .collect()
-            },
+            stars: Vec::new(),
         }
     }
 
@@ -127,9 +114,38 @@ impl canvas::State for State {
         &mut self,
         event: Event,
         cursor_position: Point,
+        layout: Layout<'_>,
         clipboard: Option<&dyn Clipboard>,
     ) {
-        dbg!("receiving event! {:?}", event);
+        match event {
+            Event::Mouse(mouse::Event::Input {
+                button: mouse::Button::Left,
+                state,
+            }) => match state {
+                ButtonState::Pressed => {
+                    let bounds = layout.bounds();
+
+                    let x = (cursor_position.x - bounds.x);
+                    let y = (cursor_position.y - bounds.y);
+
+                    use rand::Rng;
+
+                    let mut rng = rand::thread_rng();
+
+                    for _ in 0..20 {
+                        self.stars.push((
+                            Point::new(
+                                rng.gen_range(x - 150.0, x + 150.0 as f32),
+                                rng.gen_range(y - 150.0, y + 150.0 as f32),
+                            ),
+                            rng.gen_range(0.5, 1.0) as f32,
+                        ))
+                    }
+                }
+                ButtonState::Released => {},
+            },
+            _ => {}
+        };
     }
 }
 

@@ -1,5 +1,5 @@
 use iced_native::{
-    layout, Clipboard, Event, Point,
+    Layout, Clipboard, Event, Point,
 };
 
 /// hi!
@@ -9,6 +9,7 @@ pub trait State: std::fmt::Debug {
         &mut self,
         event: Event,
         cursor_position: Point,
+        layout: Layout<'_>,
         clipboard: Option<&dyn Clipboard>,
     );
 }
