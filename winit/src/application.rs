@@ -338,13 +338,24 @@ pub trait Application: Sized {
 
                 debug.render_finished();
 
-                if new_mouse_cursor != mouse_cursor {
-                    window.set_cursor_icon(conversion::mouse_cursor(
-                        new_mouse_cursor,
-                    ));
+                match (mouse_cursor, new_mouse_cursor) {
+                    (MouseCursor::Hidden, MouseCursor::Hidden) => {}
+                    (old, MouseCursor::Hidden) => {
+                        window.set_cursor_visible(false);
+                    }
+                    (old, new) => {
+                        if old == MouseCursor::Hidden {
+                            window.set_cursor_visible(true);
+                        }
 
-                    mouse_cursor = new_mouse_cursor;
+                        if old != new {
+                            window.set_cursor_icon(conversion::mouse_cursor(
+                                new_mouse_cursor,
+                            ));
+                        }
+                    }
                 }
+                mouse_cursor = new_mouse_cursor;
 
                 // TODO: Handle animations!
                 // Maybe we can use `ControlFlow::WaitUntil` for this.

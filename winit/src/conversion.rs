@@ -121,6 +121,7 @@ pub fn mouse_cursor(mouse_cursor: MouseCursor) -> winit::window::CursorIcon {
             winit::window::CursorIcon::EwResize
         }
         MouseCursor::ResizingVertically => winit::window::CursorIcon::NsResize,
+        MouseCursor::Hidden => winit::window::CursorIcon::Default,
     }
 }
 
