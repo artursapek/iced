@@ -135,13 +135,23 @@ impl Node {
         }
     }
 
-    pub(crate) fn split(&mut self, id: Split, axis: Axis, new_pane: Pane) {
+    pub(crate) fn find_split(&mut self, split: &Split) -> Option<&mut Node> {
+        match self {
+            Node::Split { a, b, id, .. } if id == split => Some(self),
+            Node::Split { a, b, id, .. } => {
+                a.find_split(split).or_else(move || b.find_split(split))
+            }
+            Node::Pane(p) => None,
+        }
+    }
+
+    pub(crate) fn split(&mut self, id: Split, axis: Axis, new_node: Node) {
         *self = Node::Split {
             id,
             axis,
             ratio: 0.5,
             a: Box::new(self.clone()),
-            b: Box::new(Node::Pane(new_pane)),
+            b: Box::new(new_node),
         };
     }
 
