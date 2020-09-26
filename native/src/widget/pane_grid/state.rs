@@ -233,12 +233,50 @@ impl<T> State<T> {
             Split(self.internal.last_id)
         };
 
-        node.split(new_split, axis, new_pane);
+        node.split(new_split, axis, Node::Pane(new_pane));
 
         let _ = self.panes.insert(new_pane, state);
         self.focus(&new_pane);
 
         Some((new_pane, new_split))
+    }
+
+    /// Splits a split, haha
+    pub fn split_split(
+        &mut self,
+        axis: Axis,
+        split: &Split,
+        state: T,
+    ) -> Option<(Pane, Split)> {
+        let node = self.internal.layout.find_split(split)?;
+
+        let new_pane = {
+            self.internal.last_id = self.internal.last_id.checked_add(1)?;
+
+            Pane(self.internal.last_id)
+        };
+
+        let new_split = {
+            self.internal.last_id = self.internal.last_id.checked_add(1)?;
+
+            Split(self.internal.last_id)
+        };
+
+        node.split(new_split, axis, Node::Pane(new_pane));
+
+        let _ = self.panes.insert(new_pane, state);
+        self.focus(&new_pane);
+
+        Some((new_pane, new_split))
+    }
+
+    /// Switches a and b in a split
+    pub fn swap_split(&mut self, split: &Split) {
+        if let Some(Node::Split { a, b, .. }) =
+            self.internal.layout.find_split(split)
+        {
+            std::mem::swap(a, b);
+        }
     }
 
     /// Swaps the position of the provided panes in the [`State`].

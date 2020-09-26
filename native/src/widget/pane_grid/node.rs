@@ -43,6 +43,28 @@ pub enum Node {
 }
 
 impl Node {
+    /// Returns an iterator over each [`Pane`] in this [`Node`].
+    ///
+    /// [`Pane`]: struct.Pane.html
+    /// [`Node`]: enum.Node.html
+    pub fn panes(&self) -> impl Iterator<Item = &Pane> {
+        let mut unvisited_nodes = vec![self];
+
+        std::iter::from_fn(move || {
+            while let Some(node) = unvisited_nodes.pop() {
+                match node {
+                    Node::Split { id, a, b, .. } => {
+                        unvisited_nodes.push(a);
+                        unvisited_nodes.push(b);
+                    }
+                    Node::Pane(id) => return Some(id),
+                }
+            }
+
+            None
+        })
+    }
+
     /// Returns an iterator over each [`Split`] in this [`Node`].
     ///
     /// [`Split`]: struct.Split.html
@@ -135,13 +157,23 @@ impl Node {
         }
     }
 
-    pub(crate) fn split(&mut self, id: Split, axis: Axis, new_pane: Pane) {
+    pub(crate) fn find_split(&mut self, split: &Split) -> Option<&mut Node> {
+        match self {
+            Node::Split { a, b, id, .. } if id == split => Some(self),
+            Node::Split { a, b, id, .. } => {
+                a.find_split(split).or_else(move || b.find_split(split))
+            }
+            Node::Pane(p) => None,
+        }
+    }
+
+    pub(crate) fn split(&mut self, id: Split, axis: Axis, new_node: Node) {
         *self = Node::Split {
             id,
             axis,
             ratio: 0.5,
             a: Box::new(self.clone()),
-            b: Box::new(Node::Pane(new_pane)),
+            b: Box::new(new_node),
         };
     }
 
