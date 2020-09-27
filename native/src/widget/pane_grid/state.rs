@@ -270,7 +270,9 @@ impl<T> State<T> {
         Some((new_pane, new_split))
     }
 
-    /// Switches a and b in a split
+    /// Swaps the children in a [`Split`]
+    ///
+    /// [`Split`]: struct.Split.html
     pub fn swap_split(&mut self, split: &Split) {
         if let Some(Node::Split { a, b, .. }) =
             self.internal.layout.find_split(split)
