@@ -137,11 +137,11 @@ impl Node {
 
     pub(crate) fn find_split(&mut self, split: &Split) -> Option<&mut Node> {
         match self {
-            Node::Split { a, b, id, .. } if id == split => Some(self),
-            Node::Split { a, b, id, .. } => {
+            Node::Split { id, .. } if id == split => Some(self),
+            Node::Split { a, b, .. } => {
                 a.find_split(split).or_else(move || b.find_split(split))
             }
-            Node::Pane(p) => None,
+            Node::Pane(_) => None,
         }
     }
 
